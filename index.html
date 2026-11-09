@@ -28,7 +28,9 @@
             <p class="muted">Point the console at the same relay URL configured in the Android app.</p>
             <form id="connectionForm">
               <label>Bridge URL<input id="bridgeUrl" type="url" placeholder="https://relay.example.com" required /></label>
-              <label>Browser token<input id="bridgeToken" type="password" placeholder="Short-lived token" autocomplete="off" required /></label>
+              <label>Browser token <span class="label-note">local/testing only</span><input id="bridgeToken" type="password" placeholder="Short-lived token" autocomplete="off" /></label>
+              <div class="auth-divider"><span>or sign in</span></div>
+              <div class="form-grid compact-grid"><label>Username<input id="username" type="text" autocomplete="username" placeholder="admin" /></label><label>Password<input id="password" type="password" autocomplete="current-password" placeholder="••••••••" /></label></div>
               <label>Device label<input id="deviceLabel" type="text" placeholder="Office Android" maxlength="60" /></label>
               <button class="primary" type="submit">Save and check bridge</button>
             </form>
@@ -56,7 +58,7 @@
         </section>
       </div>
 
-      <footer><span>Relay Desk static console</span><a href="README.md">Setup notes</a><span>SMS is sent by your configured Android SIM bridge</span></footer>
+      <footer><a href="https://sheetzy911-ops.github.io/relay-pairing-android/">Download Android bridge</a><span>Relay Desk static console</span><a href="README.md">Setup notes</a><span>SMS is sent by your configured Android SIM bridge</span></footer>
     </main>
     <script src="app.js" defer></script>
   </body>

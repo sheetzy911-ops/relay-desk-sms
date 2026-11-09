@@ -6,6 +6,8 @@ const connectionForm = $("connectionForm");
 const messageForm = $("messageForm");
 const bridgeUrl = $("bridgeUrl");
 const bridgeToken = $("bridgeToken");
+const username = $("username");
+const password = $("password");
 const deviceLabel = $("deviceLabel");
 const connectionState = $("connectionState");
 const connectionStatus = $("connectionStatus");
@@ -78,7 +80,7 @@ function renderActivity() {
 }
 
 async function bridgeFetch(path, options = {}) {
-  if (!connection?.url || !connection?.token) throw new Error("Connect a bridge first");
+  if (!connection?.url || (!connection?.token && !connection?.session)) throw new Error("Connect a bridge first");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
@@ -87,7 +89,7 @@ async function bridgeFetch(path, options = {}) {
       signal: controller.signal,
       headers: {
         ...(options.body ? { "content-type": "application/json" } : {}),
-        "x-api-key": connection.token,
+        ...(connection.session ? { authorization: `Bearer ${connection.session}` } : { "x-api-key": connection.token }),
         ...(options.headers || {})
       }
     });
@@ -105,7 +107,7 @@ function websocketUrl() {
   const url = new URL(connection.url);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.pathname = "/ws";
-  url.search = `?token=${encodeURIComponent(connection.token)}`;
+  url.search = `?token=${encodeURIComponent(connection.wsToken || connection.token || connection.session)}`;
   return url.toString();
 }
 
@@ -131,7 +133,7 @@ function handleLiveEvent(event) {
 }
 
 function connectLive() {
-  if (!connection?.url || !connection?.token || typeof WebSocket === "undefined") return;
+  if (!connection?.url || (!connection?.token && !connection?.session) || typeof WebSocket === "undefined") return;
   if (reconnectTimer) clearTimeout(reconnectTimer);
   if (liveSocket) liveSocket.close();
   try {
@@ -177,10 +179,30 @@ connectionForm.addEventListener("submit", async (event) => {
     setStatus(connectionStatus, "Bridge URL must start with http:// or https://", "error");
     return;
   }
-  connection = { url, token: bridgeToken.value.trim(), label: deviceLabel.value.trim() || "Android bridge" };
-  if (!connection.token) {
-    setStatus(connectionStatus, "Enter a browser-scoped bridge token.", "error");
+  const enteredUsername = username.value.trim();
+  const enteredPassword = password.value;
+  const enteredToken = bridgeToken.value.trim();
+  if (!enteredToken && !(enteredUsername && enteredPassword)) {
+    setStatus(connectionStatus, "Enter a browser token or user credentials.", "error");
     return;
+  }
+  if (enteredUsername && enteredPassword) {
+    try {
+      const loginResponse = await fetch(`${url}/auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: enteredUsername, password: enteredPassword })
+      });
+      const loginBody = await loginResponse.json();
+      if (!loginResponse.ok) throw new Error(loginBody.error || "Login failed");
+      connection = { url, session: loginBody.token, label: deviceLabel.value.trim() || "Android bridge" };
+      password.value = "";
+    } catch (error) {
+      setStatus(connectionStatus, error.message, "error");
+      return;
+    }
+  } else {
+    connection = { url, token: enteredToken, label: deviceLabel.value.trim() || "Android bridge" };
   }
   save(STORAGE_KEY, connection);
   setStatus(connectionStatus, "Checking bridge…");
@@ -196,6 +218,8 @@ $("disconnectButton").addEventListener("click", () => {
   if (liveSocket) liveSocket.close();
   liveSocket = null;
   bridgeToken.value = "";
+  username.value = "";
+  password.value = "";
   setConnectionState(false, "Not connected");
   $("deviceName").textContent = "No device paired";
   $("deviceUrl").textContent = "Configure a bridge above";

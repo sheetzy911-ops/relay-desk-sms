@@ -1,18 +1,8 @@
 
-## Real-time status updates
+## Hardened relay mode
 
-After the bridge health check succeeds, the page opens:
+The console now supports the relay's `/auth/login` flow. Enter the bridge URL plus the relay username and password; the page stores only the short-lived session token in browser storage and uses it for HTTP and WebSocket requests.
 
-```text
-ws://127.0.0.1:8787/ws?token=<browser-token>
-```
+Pairing is intentionally an administrative action rather than an automatic browser action. Use the relay's authenticated `POST /auth/pairings` endpoint to create a one-time code and device key, then enter both in the Android app's pairing screen. After activation, the APK must send `X-Device-Key` and must not use the global Android API key.
 
-or, for an HTTPS relay:
-
-```text
-wss://relay.example.com/ws?token=<browser-token>
-```
-
-The page shows `live`, `reconnecting`, or `HTTP only` in the connection indicator. It adds live queue, `SENT`, `DELIVERED`, `FAILED`, and inbound-message events to the activity feed.
-
-For local browser testing, configure the mock/relay origin allowlist to include `http://127.0.0.1:8080`. For GitHub Pages, add the exact deployed origin such as `https://OWNER.github.io`—not `*`.
+See the relay project's `SECURITY.md` for the full migration and revocation procedure.
