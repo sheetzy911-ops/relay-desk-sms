@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#315cf6" />
+    <meta name="description" content="Static SMS console for an Android SIM bridge" />
+    <title>Relay Desk — Static SMS Console</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">RD</span><span>Relay Desk</span></div>
+        <div class="connection-state" id="connectionState"><span class="state-dot offline"></span>Not connected</div>
+      </header>
+
+      <section class="notice" id="securityNotice">
+        <strong>Static-site mode.</strong>
+        This page does not contain a server. It sends requests directly from your browser to the configured bridge. Use a short-lived browser token or a private relay; never paste a production Android API key into a public page.
+      </section>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <section class="panel">
+            <div class="eyebrow">01 / DEVICE LINK</div>
+            <h1>Connect a bridge</h1>
+            <p class="muted">Point the console at the same relay URL configured in the Android app.</p>
+            <form id="connectionForm">
+              <label>Bridge URL<input id="bridgeUrl" type="url" placeholder="https://relay.example.com" required /></label>
+              <label>Browser token<input id="bridgeToken" type="password" placeholder="Short-lived token" autocomplete="off" required /></label>
+              <label>Device label<input id="deviceLabel" type="text" placeholder="Office Android" maxlength="60" /></label>
+              <button class="primary" type="submit">Save and check bridge</button>
+            </form>
+            <div class="connection-actions"><button class="quiet" id="disconnectButton" type="button">Forget device</button><button class="quiet" id="healthButton" type="button">Check health</button></div>
+            <p class="form-status" id="connectionStatus" role="status"></p>
+          </section>
+
+          <section class="panel compact">
+            <div class="eyebrow">02 / ACTIVE DEVICE</div>
+            <div class="device-row"><span class="device-icon">A</span><div><strong id="deviceName">No device paired</strong><span id="deviceUrl">Configure a bridge above</span></div></div>
+            <div class="sim-choice"><span>Outbound SIM</span><div class="segmented"><label><input type="radio" name="sim" value="SIM1" checked /> SIM1</label><label><input type="radio" name="sim" value="SIM2" /> SIM2</label></div></div>
+          </section>
+        </aside>
+
+        <section class="workspace">
+          <div class="workspace-heading"><div><div class="eyebrow">03 / OUTBOUND SMS</div><h2>Send a message</h2></div><span class="chip" id="modeChip">STATIC CONSOLE</span></div>
+          <form class="composer panel" id="messageForm">
+            <div class="form-grid"><label>Recipient<input id="recipient" type="tel" inputmode="tel" placeholder="+15551234567" required /></label><label>Sender route<select id="senderRoute"><option value="SIM1">SIM1 — primary</option><option value="SIM2">SIM2 — secondary</option></select></label></div>
+            <label>Message<textarea id="messageBody" rows="7" maxlength="1600" placeholder="Write the message you want the selected SIM to send…" required></textarea></label>
+            <div class="composer-footer"><span class="counter" id="counter">0 / 1600</span><button class="primary send-button" type="submit">Queue SMS <span aria-hidden="true">→</span></button></div>
+            <p class="form-status" id="sendStatus" role="status"></p>
+          </form>
+
+          <section class="panel activity-panel"><div class="section-heading"><div><div class="eyebrow">04 / LOCAL ACTIVITY</div><h2>Recent requests</h2></div><button class="quiet" id="clearActivity" type="button">Clear</button></div><div id="activityList" class="activity-list"><div class="empty">Connect a bridge to begin. Requests made from this browser appear here.</div></div></section>
+        </section>
+      </div>
+
+      <footer><span>Relay Desk static console</span><a href="README.md">Setup notes</a><span>SMS is sent by your configured Android SIM bridge</span></footer>
+    </main>
+    <script src="app.js" defer></script>
+  </body>
+</html>
